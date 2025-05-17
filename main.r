@@ -15,9 +15,11 @@ ticker <- get(ticker_name) # Ticker data
 options(repr.plot.width = 14, repr.plot.height = 8)
 chartSeries(ticker, theme = chartTheme("black"), type = "line")
 
-## Line plot for closing price
+## Plots for return value
 daily_returns <- dailyReturn(Cl(ticker))
+par(mfrow = c(2, 1))
 plot(daily_returns, main = glue("Daily Returns of {ticker_name}"))
+hist(daily_returns, main = glue("Daily Returns of {ticker_name}"))
 
 ## Table visualization
 head(ticker)
