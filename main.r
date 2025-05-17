@@ -72,24 +72,38 @@ par_est <- estimators(Cl(ticker), dt)
 (sigma_est <- par_est[2])
 last_known_value <- xts::last(Cl(ticker))[[1]]
 
+### Simulate paths
+simmulations <- matrix(NA, nrow = n_obs, ncol = num_simulations)
+for (i in 1:num_simulations) {
+  sim_i <- rgbm(n_obs, mu_est, sigma_est, s0 = last_known_value)
+  simmulations[, i] <- sim_i
+}
 
-### Simulate path
-sim_path_example <- rgbm(n_obs, mu_est, sigma_est, s0 = last_known_value)
-sim_path_example_xts <- xts::xts(sim_path_example, order.by = index(ticker_val))
+### Mean path with intervals by quantiles
+means <- rowMeans(simmulations)
+lower_quantile <- apply(simmulations, 1, quantile, probs = 0.05)
+upper_quantile <- apply(simmulations, 1, quantile, probs = 0.95)
 
-### Plot true path vs simmulated path
-plots_title <- glue("Simmulation path for {ticker_name}")
-plots_ylim <- c(
-  min(sim_path_example, Cl(ticker_val), Cl(ticker)),
-  max(sim_path_example, Cl(ticker_val), Cl(ticker))
-)
-plots_xlim <- c(index(ticker)[1], xts::last(index(ticker_val)))
-n_train_obs <- dim(ticker)[1]
+means_xts <- xts::xts(means, order.by = index(ticker_val))
+lower_xts <- xts::xts(lower_quantile, order.by = index(ticker_val))
+upper_xts <- xts::xts(upper_quantile, order.by = index(ticker_val))
 blank_xts <- xts::xts(
   1:(n_train_obs + n_obs),
   order.by = c(index(ticker), index(ticker_val))
 )
+
+### Plot true path vs simmulated path
+plots_title <- glue("Simmulation path for {ticker_name}")
+plots_ylim <- c(
+  min(means, Cl(ticker_val), Cl(ticker)),
+  max(means, Cl(ticker_val), Cl(ticker))
+)
+plots_xlim <- c(index(ticker)[1], xts::last(index(ticker_val)))
+n_train_obs <- dim(ticker)[1]
+
 plot(blank_xts, ylim = plots_ylim, type = "n", main = plots_title)
 lines(Cl(ticker))
-lines(sim_path_example_xts, col = "red", lwd = 2)
-lines(Cl(ticker_val), col = "royalblue", lwd = 4)
+lines(means_xts, col = "red", lwd = 2)
+lines(Cl(ticker_val), col = "royalblue", lwd = 2)
+lines(lower_xts, col = "#ff5959")
+lines(upper_xts, col = "#ff5959")
