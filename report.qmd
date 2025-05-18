@@ -175,5 +175,64 @@ lines(lower_xts, col = "#ff5959")
 lines(upper_xts, col = "#ff5959")
 ```
 
+## Análise do modelo
+
+Após o ajuste do modelo, iniciou-se uma busca por padrões de autocorrelação da série não capturados pelo modelo, sempre sobre as séries diferenciadas. A figura \ref{fig:acf} aponta para autocorrelações contidas dentro das bandas de confiança, indicando ausência de padrões não detectados nesse sentido.
+
+```{r fig.cap="\\label{fig:acf}Correlograma dos retornos diários para o preço de fechamento de PETR4 em 2025 e do modelo ajustado."}
+par(mfrow = c(2, 1))
+acf(
+    dailyReturn(Cl(ticker_val)),
+    main = "Autocorrelação dos Preços",
+    lag.max = 500
+)
+acf(
+    dailyReturn(means_xts),
+    main = "Autocorrelação do modelo ajustado",
+    lag.max = 500
+)
+par(mfrow = c(1, 1))
+```
+
+Como observou-se que os retornos não possuem comportamento tão bem adequado à distribuição normal, é esperado que os resíduos também não sejam normalmente distribuídos. 
+
+Da figura \ref{fig:residual} tem-se que que os resíduos não parecem se ajustar à distruição normal, isso pode ser notado a partir do histograma, do qqplot e do histograma que mostra a mediana muito deslocada do ponto médio entre o primeiro e o terceiro quartil. O gráfico de linhas mostra que a grande o período da grande queda de preço teve um ajuste muito mais distante em magnitude que para o restante da série.
+
+```{r fig.cap="\\label{fig:residual}Gráficos da análise de resíduos em 2025 para o modelo ajustado."}
+residuals <- Cl(ticker_val) - means_xts
+names(residuals) <- c("Residuals")
+residuals$abline <- 0
+
+par(mfrow = c(2, 2))
+
+boxplot(
+    residuals[, "Residuals"],
+    ylab = "Residuals",
+    main = "Boxplot of Residuals"
+)
+
+hist(
+    residuals[, "Residuals"],
+    breaks = 20,
+    main = "Histogram of Residuals",
+    xlab = "Residuals"
+)
+
+plot.zoo(
+    residuals[, "Residuals"],
+    type = "l",
+    xlab = "Date", ylab = "Residuals",
+    main = "Fitted Model Residuals"
+)
+lines(zoo(residuals[, "abline"]), col = "red", lwd = 2)
+
+ecostats::qqenvelope(
+    as.numeric(residuals[, "Residuals"]),
+    ylab = "Randomized Quantile Residuals",
+    main = "QQPlot Residuals"
+)
+qqline(residuals[, "Residuals"], col = 2)
+par(mfrow = c(1, 1))
+```
 
 # Conclusão
