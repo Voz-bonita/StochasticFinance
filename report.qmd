@@ -333,3 +333,9 @@ par(mfrow = c(1, 1))
 ```
 
 # Conclusão
+
+Em conclusão, viu-se que o ajuste do primeiro modelo considerando apenas o período de 2024 para predição dos valores de fechamento em 2025 não conseguiu aderir tão bem aos valores observados em termos das estimativas pontuais, apenas para as bandas de confiança. Por outro lado, o ajuste de um novo modelo a cada dia simulou razoavelmente próximo os valores observados em termos das estimativas pontuais, por tanto se sobresaindo como o melhor dos dois modelos.
+
+Em aspectos gerais do problema, ambos os modelos não foram capazes de apresentar resíduos normalmente distribuídos, bem como o próprio retorno diário também pareceu ter problemas de normalidade. Sob essa ótica, tem-se que nenhum dos modelos estudados parece adequado para o problema, pela suposição de normalidade do movimento browniano, mesmo que o modelo atualizado diariamente tenha um ajuste visivelmente razoável.
+
+Suspeita-se que essa inconsistência poderia ser corrigida utilizando outra distribuição de probabilidade para modelar o problema, tal como proposto pela Teoria de Valores Extremais.
