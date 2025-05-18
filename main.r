@@ -107,3 +107,13 @@ lines(means_xts, col = "red", lwd = 2)
 lines(Cl(ticker_val), col = "royalblue", lwd = 2)
 lines(lower_xts, col = "#ff5959")
 lines(upper_xts, col = "#ff5959")
+
+# Fitted Model Analsysis
+par(mfrow = c(2, 1))
+acf(daily_returns, main = "Autocorrelação dos Preços", lag.max = 500)
+acf(
+  dailyReturn(means_xts),
+  main = "Autocorrelação do modelo ajustado",
+  lag.max = 500
+)
+par(mfrow = c(1, 1))
