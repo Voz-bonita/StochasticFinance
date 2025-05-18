@@ -167,3 +167,43 @@ ecostats::qqenvelope(
 )
 qqline(residuals[, "Residuals"], col = 2)
 par(mfrow = c(1, 1))
+
+full_series <- rbind(Cl(ticker), Cl(ticker_val))
+means_dbd <- numeric(n_obs)
+lower_quantile_dbd <- numeric(n_obs)
+upper_quantile_dbd <- numeric(n_obs)
+for (i in 0:(n_obs - 1)) {
+  last_value <- full_series[n_train_obs + i, ]
+  partial_series <- full_series[1:(n_train_obs + i), ]
+  partial_parameters <- estimators(partial_series, 1 / nrow(partial_series))
+  partial_mu <- partial_parameters[1]
+  partial_sigma2 <- partial_parameters[2]
+  partial_sigma <- sqrt(partial_sigma2)
+  next_day_sim <- purrr::map_vec(
+    1:num_simulations,
+    ~ rgbm(1, partial_mu, partial_sigma, last_value)
+  )
+
+  means_dbd[i + 1] <- mean(next_day_sim)
+  lower_quantile_dbd[i + 1] <- quantile(next_day_sim, probs = c(0.05))
+  upper_quantile_dbd[i + 1] <- quantile(next_day_sim, probs = c(0.95))
+}
+
+means_dbd_xts <- xts::xts(means_dbd, order.by = index(ticker_val))
+lower_dbd_xts <- xts::xts(lower_quantile_dbd, order.by = index(ticker_val))
+upper_dbd_xts <- xts::xts(upper_quantile_dbd, order.by = index(ticker_val))
+
+### Plot true path vs simmulated path
+plots_title <- glue("Simmulation path for {ticker_name}")
+plots_ylim <- c(
+  min(means_dbd, Cl(full_series), lower_quantile_dbd, upper_quantile_dbd),
+  max(means_dbd, Cl(full_series), lower_quantile_dbd, upper_quantile_dbd)
+)
+plots_xlim <- c(index(ticker)[1], xts::last(index(ticker_val)))
+
+plot(blank_xts, ylim = plots_ylim, type = "n", main = plots_title)
+lines(Cl(ticker))
+lines(means_dbd_xts, col = "red", lwd = 2)
+lines(Cl(ticker_val), col = "royalblue", lwd = 2)
+lines(lower_dbd_xts, col = "#ff5959")
+lines(upper_dbd_xts, col = "#ff5959")
