@@ -1,7 +1,7 @@
 ---
 title: "Análise de Ativos Financeiros"
 subtitle: "Movimento Browniano Geométrico"
-author: "José Vítor Barreto Porfírio 190089971"
+author: "José Vítor Barreto Porfirio 190089971"
 date: "19/05/2025"
 execute:
   echo: true
