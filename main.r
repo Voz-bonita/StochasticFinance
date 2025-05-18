@@ -73,12 +73,13 @@ num_simulations <- 100
 par_est <- estimators(Cl(ticker), 1 / n_train_obs)
 (mu_est <- par_est[1])
 (sigma2_est <- par_est[2])
+sigma_est <- sqrt(sigma2_est)
 last_known_value <- xts::last(Cl(ticker))[[1]]
 
 ### Simulate paths
 simmulations <- matrix(NA, nrow = n_obs, ncol = num_simulations)
 for (i in 1:num_simulations) {
-  sim_i <- rgbm(n_obs, mu_est, sigma2_est, s0 = last_known_value)
+  sim_i <- rgbm(n_obs, mu_est, sigma_est, s0 = last_known_value)
   simmulations[, i] <- sim_i
 }
 
@@ -98,8 +99,8 @@ blank_xts <- xts::xts(
 ### Plot true path vs simmulated path
 plots_title <- glue("Simmulation path for {ticker_name}")
 plots_ylim <- c(
-  min(means, Cl(ticker_val), Cl(ticker)),
-  max(means, Cl(ticker_val), Cl(ticker))
+  min(means, Cl(ticker_val), Cl(ticker), lower_quantile, upper_quantile),
+  max(means, Cl(ticker_val), Cl(ticker), lower_quantile, upper_quantile)
 )
 plots_xlim <- c(index(ticker)[1], xts::last(index(ticker_val)))
 
