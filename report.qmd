@@ -1,0 +1,93 @@
+---
+title: "Análise de Ativos Financeiros"
+subtitle: "Movimento Browniano Geométrico"
+author: "José Vítor Barreto Porfírio 190089971"
+date: "19/05/2025"
+execute:
+  echo: true
+  output: true
+format: 
+  pdf:
+    fig-width: 8
+    fig-height: 4
+    code-fold: true
+header-includes:
+  - \usepackage{indentfirst}
+  - \usepackage{booktabs}
+  - \usepackage{xcolor}
+  - \setlength{\parindent}{10ex}
+  - \renewcommand{\tablename}{Tabela}
+  - \renewcommand{\figurename}{Figura}
+classoption: a4paper, table
+---
+
+# Introdução
+
+
+
+# Metodologia
+
+## Ativo financeiro escolhido
+
+O ativo financeiro escolhido foram as ações dadas pelo _ticker_ **PETR4**, ações ordiárias da empresa Petrobras, uma empresa de economia mista. Essa é uma empresa com grande participação no principal índice acionário do Brasil, o Ibovespa, com cerca de 4,34% de participação na data 18/05/2025. 
+
+## Obtenção dos dados
+
+Os dados foram obtidos a partir do Yahoo Finance por meio do pacote `quantmod` para todas as datas disponíveis no ano de 2024 para o período de ajuste do modelo, sendo que o ano de 2025 foi utilizado para avaliar as predições do modelo.
+```{r}
+pacman::p_load("ggplot2", "quantmod", "glue")
+
+start_date <- as.Date("2024-01-01")
+end_date <- as.Date("2024-12-31")
+
+ticker_name <- "PETR4.SA"
+
+getSymbols(ticker_name, from = start_date, to = end_date)
+ticker <- get(ticker_name) # Ticker data
+
+start_val_date <- end_date + 1
+end_val_date <- Sys.Date()
+ticker_val <- getSymbols(
+    ticker_name,
+    from = start_val_date, to = end_val_date,
+    auto.assign = FALSE
+)
+```
+
+# Resultados
+
+A figura \ref{fig:ticker_series} mostra a evolução do ativo financeiro ao longo do ano de 2024 juntamente com o volume de transações. A evolução parece oscilar dentro de uma faixa para o ano de 2024, enquanto da figura \ref{fig:ticker_val_series} tem-se que ano de 2025 mostra mais variações com padrão de queda no valor nominal das cotas de PETR4, logo, sabe-se que o desafio do modelo será predizer uma situação visualmente diferente daquela que será ajustado.
+
+```{r}
+#| fig-cap: "\\label{fig:ticker_series}Evolução do valor de fechamento nominal de PETR4 ao longo de 2024."
+options(repr.plot.width = 14, repr.plot.height = 8)
+chartSeries(ticker, theme = chartTheme("black"), type = "line")
+```
+
+```{r}
+#| fig-cap: "\\label{fig:ticker_val_series}Evolução do valor de fechamento nominal de PETR4 ao longo de 2025."
+chartSeries(ticker_val, theme = chartTheme("black"), type = "line")
+```
+
+
+Para evitar comportamentos de tendência da série, procedeu-se numa breve análise dos retornos diários dada pela figura \ref{return_exploratory}, em que observa-se do gráfico de linhas da densidade que a distribuição normal não teve um ajuste tão bom próximo ao pico de máxima verossimilhança da densidade real dos dados e as caldas parecen bem ajustadas, logo, isso indica que a teoria desenvolvida para retornos normalmente distribuídos talvez não seja adequada para essa análise e deveria-se recorrer a outra ferramenta como Teoria de Valores Extremais.
+
+```{r}
+#| fig-cap: "\\label{fig:return_exploratory}Gráficos dos retornos diários nominais de PETR4 em 2024."
+daily_returns <- dailyReturn(Cl(ticker))
+return_mu <- mean(daily_returns)
+return_sd <- sd(daily_returns)
+
+normal_fit_x <- seq(min(daily_returns), max(daily_returns), length.out = 100)
+normal_fit_y <- dnorm(normal_fit_x, return_mu, return_sd)
+
+par(mfrow = c(3, 1))
+plot(daily_returns, main = glue("Daily Returns of {ticker_name}"))
+hist(daily_returns, main = glue("Daily Returns of {ticker_name}"))
+plot(density(daily_returns), type = "n") # invisible plot to separate lines
+lines(density(daily_returns), col = "black", lwd = 2, )
+lines(normal_fit_x, normal_fit_y, col = "red", lwd = 2)
+par(mfrow = c(1, 1))
+```
+
+# Conclusão
