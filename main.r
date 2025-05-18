@@ -58,8 +58,9 @@ rgbm <- function(n, mu, sigma, s0 = 1, limit = 1) {
 ## Maximum Likelihood Estimators
 estimators <- function(s, dt) {
   s <- as.numeric(s)
-  sigma2_est <- (1 / dt) * var(diff(log(s)))
-  mu_est <- (1 / dt) * mean(diff(log(s))) + (1 / 2) * sigma2_est^2
+  x <- diff(log(s))
+  sigma2_est <- (1 / dt) * var(x)
+  mu_est <- (1 / dt) * mean(x) + (1 / 2) * sigma2_est^2
   return(c(mu_est, sigma2_est))
 }
 
