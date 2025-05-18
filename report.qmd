@@ -287,4 +287,49 @@ lines(lower_dbd_xts, col = "#ff5959")
 lines(upper_dbd_xts, col = "#ff5959")
 ```
 
+## Análise dos modelos diários
+
+Sobre os resíduos do modelo, notou-se que eles não estavam oscilando em torno do zero, mas oscilando próximo a um valor negativo nas vizinhanças de -1.5, portanto, aplicou-se uma correção de locação subtraindo sua média.
+
+Da figura \ref{fig:res_dbd} tem-se que o boxplot mostra uma boa simetria entre o posicionamento da mediana e dos demais quartis, reforçada pelo gráfico de linhas. O histograma e o qqplot estão com ajuste melhor em relação ao mostrado na figura \ref{fig:residuals}, porém continuam não adequados para uma variável aleatória normalmente distribuída, indicando que algum problema persiste no ajuste.
+
+```{r fig.cap="\\label{fig:res_dbd}Gráficos da análise de resíduos em 2025 para o modelo ajustado.", fig.height=8, fig.width=8}
+residuals_dbd <- Cl(ticker_val) - means_dbd_xts
+residuals_dbd <- residuals_dbd - mean(residuals_dbd)
+names(residuals_dbd) <- c("Residuals")
+residuals_dbd$abline <- 0
+
+
+par(mfrow = c(2, 2))
+
+boxplot(
+  residuals_dbd[, "Residuals"],
+  ylab = "Residuals",
+  main = "Boxplot of Residuals"
+)
+
+hist(
+  residuals_dbd[, "Residuals"],
+  breaks = 20,
+  main = "Histogram of Residuals",
+  xlab = "Residuals"
+)
+
+plot.zoo(
+  residuals_dbd[, "Residuals"],
+  type = "l",
+  xlab = "Date", ylab = "Residuals",
+  main = "Fitted Model Residuals"
+)
+lines(zoo(residuals_dbd[, "abline"]), col = "red", lwd = 2)
+
+ecostats::qqenvelope(
+  as.numeric(residuals_dbd[, "Residuals"]),
+  ylab = "Randomized Quantile Residuals",
+  main = "QQPlot Residuals"
+)
+qqline(residuals_dbd[, "Residuals"], col = 2)
+par(mfrow = c(1, 1))
+```
+
 # Conclusão

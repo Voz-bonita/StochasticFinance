@@ -168,6 +168,8 @@ ecostats::qqenvelope(
 qqline(residuals[, "Residuals"], col = 2)
 par(mfrow = c(1, 1))
 
+# Daily estimation
+## Fitting
 full_series <- rbind(Cl(ticker), Cl(ticker_val))
 means_dbd <- numeric(n_obs)
 lower_quantile_dbd <- numeric(n_obs)
@@ -207,3 +209,41 @@ lines(means_dbd_xts, col = "red", lwd = 2)
 lines(Cl(ticker_val), col = "royalblue", lwd = 2)
 lines(lower_dbd_xts, col = "#ff5959")
 lines(upper_dbd_xts, col = "#ff5959")
+
+## Residuals
+residuals_dbd <- Cl(ticker_val) - means_dbd_xts
+residuals_dbd <- residuals_dbd - mean(residuals_dbd)
+names(residuals_dbd) <- c("Residuals")
+residuals_dbd$abline <- 0
+
+
+par(mfrow = c(2, 2))
+
+boxplot(
+  residuals_dbd[, "Residuals"],
+  ylab = "Residuals",
+  main = "Boxplot of Residuals"
+)
+
+hist(
+  residuals_dbd[, "Residuals"],
+  breaks = 20,
+  main = "Histogram of Residuals",
+  xlab = "Residuals"
+)
+
+plot.zoo(
+  residuals_dbd[, "Residuals"],
+  type = "l",
+  xlab = "Date", ylab = "Residuals",
+  main = "Fitted Model Residuals"
+)
+lines(zoo(residuals_dbd[, "abline"]), col = "red", lwd = 2)
+
+ecostats::qqenvelope(
+  as.numeric(residuals_dbd[, "Residuals"]),
+  ylab = "Randomized Quantile Residuals",
+  main = "QQPlot Residuals"
+)
+qqline(residuals_dbd[, "Residuals"], col = 2)
+par(mfrow = c(1, 1))
