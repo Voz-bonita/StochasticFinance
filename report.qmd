@@ -2,7 +2,9 @@
 title: "Análise de Ativos Financeiros"
 subtitle: "Movimento Browniano Geométrico"
 author: "José Vítor Barreto Porfirio 190089971"
-date: "19/05/2025"
+date: "19 may 2025"
+date-format: "DD MMMM YYYY"
+lang: pt
 execute:
   echo: true
   output: true
