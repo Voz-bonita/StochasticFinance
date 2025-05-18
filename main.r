@@ -63,11 +63,12 @@ ticker_val <- getSymbols(
   auto.assign = FALSE
 )
 
+n_train_obs <- dim(ticker)[1]
 n_obs <- dim(ticker_val)[1]
 num_simulations <- 100
 
 ### Model Params
-par_est <- estimators(Cl(ticker), dt)
+par_est <- estimators(Cl(ticker), 1 / n_train_obs)
 (mu_est <- par_est[1])
 (sigma_est <- par_est[2])
 last_known_value <- xts::last(Cl(ticker))[[1]]
@@ -99,7 +100,6 @@ plots_ylim <- c(
   max(means, Cl(ticker_val), Cl(ticker))
 )
 plots_xlim <- c(index(ticker)[1], xts::last(index(ticker_val)))
-n_train_obs <- dim(ticker)[1]
 
 plot(blank_xts, ylim = plots_ylim, type = "n", main = plots_title)
 lines(Cl(ticker))
