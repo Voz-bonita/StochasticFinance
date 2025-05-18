@@ -40,7 +40,7 @@ tail(ticker)
 ## Random Geometric Brownian Motion
 rgbm <- function(n, mu, sigma, s0 = 1, limit = 1) {
   # Uses SDE Solution
-  t <- seq(0, 1, length.out = n)
+  t <- seq(0, limit, length.out = n)
   st <- s0 * exp((mu - sigma^2 / 2) * t + sigma * rnorm(n))
   return(st)
 }
