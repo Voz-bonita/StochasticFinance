@@ -117,3 +117,46 @@ acf(
   lag.max = 500
 )
 par(mfrow = c(1, 1))
+
+
+### Residual analysis
+residuals <- Cl(ticker_val) - means_xts
+names(residuals) <- c("Residuals")
+residuals$abline <- 0
+
+summary(residuals)
+sd(residuals)
+e1071::skewness(residuals)
+e1071::kurtosis(residuals)
+
+
+par(mfrow = c(2, 2))
+
+boxplot(
+  residuals[, "Residuals"],
+  ylab = "Residuals",
+  main = "Boxplot of Residuals"
+)
+
+hist(
+  residuals[, "Residuals"],
+  breaks = 20,
+  main = "Histogram of Residuals",
+  xlab = "Residuals"
+)
+
+plot.zoo(
+  residuals[, "Residuals"],
+  type = "l",
+  xlab = "Date", ylab = "Residuals",
+  main = "Fitted Model Residuals"
+)
+lines(zoo(residuals[, "abline"]), col = "red", lwd = 2)
+
+ecostats::qqenvelope(
+  as.numeric(residuals[, "Residuals"]),
+  ylab = "Randomized Quantile Residuals",
+  main = "QQPlot Residuals"
+)
+qqline(residuals[, "Residuals"], col = 2)
+par(mfrow = c(1, 1))
