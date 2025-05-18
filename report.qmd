@@ -19,11 +19,12 @@ header-includes:
   - \renewcommand{\tablename}{Tabela}
   - \renewcommand{\figurename}{Figura}
 classoption: a4paper, table
+bibliography: references.bib
 ---
 
 # Introdução
 
-
+O movimento browniano geométrico é um dos modelo clássico e amplamente utilizado na modelagem de ativos financeiros, popularizado com o modelo de precificação de opções de Black-Scholes \cite{blackScholes1973}, no qual os preços dos ativos são descritos por um processo estocástico a tempo contínuo. Um fator importante a se notar, é que o movimento browniano geométrico assume que os retornos logarítmicos dos ativos são normalmente distribuídos e independentes no tempo, mas para este estudo encotrou-se problemas nessa suposição para o ativo financeiro escolhido e seguiu-se com a modelagem para entender que tipo de problemas podem surigir sob essas condições adversas.
 
 # Metodologia
 
