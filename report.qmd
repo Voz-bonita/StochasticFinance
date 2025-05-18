@@ -56,6 +56,8 @@ ticker_val <- getSymbols(
 
 # Resultados
 
+## Análise Exploratória
+
 A figura \ref{fig:ticker_series} mostra a evolução do ativo financeiro ao longo do ano de 2024 juntamente com o volume de transações. A evolução parece oscilar dentro de uma faixa para o ano de 2024, enquanto da figura \ref{fig:ticker_val_series} tem-se que ano de 2025 mostra mais variações com padrão de queda no valor nominal das cotas de PETR4, logo, sabe-se que o desafio do modelo será predizer uma situação visualmente diferente daquela que será ajustado.
 
 ```{r}
@@ -89,5 +91,90 @@ lines(density(daily_returns), col = "black", lwd = 2, )
 lines(normal_fit_x, normal_fit_y, col = "red", lwd = 2)
 par(mfrow = c(1, 1))
 ```
+
+## Monte Carlo
+
+Seguiu-se com a implementação do Movimento Browniano Geométrico a partir da solução de sua equação diferencial ordinária, bem como dos estimadores de máxima verossimilhança para um processo estocástico $S(t)$ qualquer.
+
+```{r}
+rgbm <- function(n, mu, sigma, s0 = 1, limit = 1) {
+    # Uses SDE Solution
+    t <- seq(0, limit, length.out = n)
+    st <- s0 * exp((mu - sigma^2 / 2) * t + sigma * rnorm(n))
+    return(st)
+}
+
+## Maximum Likelihood Estimators
+estimators <- function(s, dt) {
+    s <- as.numeric(s)
+    x <- diff(log(s))
+    sigma2_est <- (1 / dt) * var(x)
+    mu_est <- (1 / dt) * mean(x) + (1 / 2) * sigma2_est^2
+    return(c(mu_est, sigma2_est))
+}
+
+
+## Monte Carlo
+n_train_obs <- dim(ticker)[1]
+n_obs <- dim(ticker_val)[1]
+num_simulations <- 100
+
+### Model Params
+par_est <- estimators(Cl(ticker), 1 / n_train_obs)
+(mu_est <- par_est[1])
+(sigma2_est <- par_est[2])
+last_known_value <- xts::last(Cl(ticker))[[1]]
+```
+
+Para os parâmetros do modelo, $\mu$ e $\sigma$, obteve-se os estimadores
+$$\hat{\mu} = `r mu_est`;~~ \hat{\sigma} = `r sigma2_est`$$
+
+O coeficiente de *drift* obtido para a série apontara uma tendência de queda ao longo do tempo, o que parece promissor, pois é conhecido que o comportamento do ativo para o ano de 2025 foi com queda do seu valor nominal.
+
+Com os parâmetros estimados do modelo à disposição, pode-se seguir para realizar simulações do processo com a utilização da técnica de Monte Carlo para obter as estimativas pontuais e os limites do intervalo de confiança empírico apresentado na figura \ref{fig:mc}.
+
+```{r}
+simmulations <- matrix(NA, nrow = n_obs, ncol = num_simulations)
+for (i in 1:num_simulations) {
+    sim_i <- rgbm(n_obs, mu_est, sigma2_est, s0 = last_known_value)
+    simmulations[, i] <- sim_i
+}
+
+### Mean path with intervals by quantiles
+means <- rowMeans(simmulations)
+lower_quantile <- apply(simmulations, 1, quantile, probs = 0.05)
+upper_quantile <- apply(simmulations, 1, quantile, probs = 0.95)
+
+means_xts <- xts::xts(means, order.by = index(ticker_val))
+lower_xts <- xts::xts(lower_quantile, order.by = index(ticker_val))
+upper_xts <- xts::xts(upper_quantile, order.by = index(ticker_val))
+blank_xts <- xts::xts(
+    1:(n_train_obs + n_obs),
+    order.by = c(index(ticker), index(ticker_val))
+)
+```
+
+Da figura \ref{fig:mc} observa-se o comportamento esperado pelo parâmetro de *drift* negativo obtido anteriormente, de forma que a simulação média dos dados parece se apróximar dos valores reais, de forma que o intervalo de confiança empírico cobriu a maior parte dos do preço real observado.
+
+```{r fig.show='hide'}
+### Plot true path vs simmulated path
+plots_title <- glue("Simmulation path for {ticker_name}")
+plots_ylim <- c(
+    min(means, Cl(ticker_val), Cl(ticker)),
+    max(means, Cl(ticker_val), Cl(ticker))
+)
+plots_xlim <- c(index(ticker)[1], xts::last(index(ticker_val)))
+
+plot(blank_xts, ylim = plots_ylim, type = "n", main = plots_title)
+lines(Cl(ticker))
+lines(means_xts, col = "red", lwd = 2)
+lines(Cl(ticker_val), col = "royalblue", lwd = 2)
+lines(lower_xts, col = "#ff5959")
+```
+
+```{r fig.cap="\\label{fig:mc}Gráfico de linhas da simulação de Monte Carlo para preço de fechamento de PETR4 em 2025 contra seu preço real."}
+lines(upper_xts, col = "#ff5959")
+```
+
 
 # Conclusão
