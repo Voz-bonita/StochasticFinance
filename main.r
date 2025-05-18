@@ -10,10 +10,20 @@ ticker_name <- "PETR4.SA"
 getSymbols(ticker_name, from = start_date, to = end_date)
 ticker <- get(ticker_name) # Ticker data
 
+### Validation data
+start_val_date <- end_date + 1
+end_val_date <- Sys.Date()
+ticker_val <- getSymbols(
+  ticker_name,
+  from = start_val_date, to = end_val_date,
+  auto.assign = FALSE
+)
+
 # Exploratory
 ## Line plot of ticker pricing
 options(repr.plot.width = 14, repr.plot.height = 8)
 chartSeries(ticker, theme = chartTheme("black"), type = "line")
+chartSeries(ticker_val, theme = chartTheme("black"), type = "line")
 
 ## Plots for return value
 daily_returns <- dailyReturn(Cl(ticker))
@@ -54,15 +64,6 @@ estimators <- function(s, dt) {
 }
 
 ## Monte Carlo
-### Validation data
-start_val_date <- end_date + 1
-end_val_date <- Sys.Date()
-ticker_val <- getSymbols(
-  ticker_name,
-  from = start_val_date, to = end_val_date,
-  auto.assign = FALSE
-)
-
 n_train_obs <- dim(ticker)[1]
 n_obs <- dim(ticker_val)[1]
 num_simulations <- 100
