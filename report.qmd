@@ -154,8 +154,7 @@ blank_xts <- xts::xts(
 )
 ```
 
-Da figura \ref{fig:mc} observa-se o comportamento esperado pelo parâmetro de *drift* negativo obtido anteriormente, de forma que a simulação média dos dados parece se apróximar dos valores reais, de forma que o intervalo de confiança empírico cobriu a maior parte dos do preço real observado.
-
+Da figura \ref{fig:mc} observa-se o comportamento esperado pelo parâmetro de *drift* negativo obtido anteriormente, de forma que a simulação média dos dados parece se apróximar dos valores reais, de forma que o intervalo de confiança empírico cobriu a maior parte dos do preço real observado, mesmo no período de queda mais acentuada.
 ```{r fig.show='hide'}
 ### Plot true path vs simmulated path
 plots_title <- glue("Simmulation path for {ticker_name}")
